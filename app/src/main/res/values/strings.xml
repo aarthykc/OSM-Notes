@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">mapboxTest</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="load_map">Send bbox</string>
+</resources>
