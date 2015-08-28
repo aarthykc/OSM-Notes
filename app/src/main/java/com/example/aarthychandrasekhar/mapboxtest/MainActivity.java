@@ -11,6 +11,21 @@ import com.mapbox.mapboxsdk.geometry.BoundingBox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.Marker;
 import com.mapbox.mapboxsdk.views.MapView;
+import com.stanfy.gsonxml.GsonXml;
+import com.stanfy.gsonxml.GsonXmlBuilder;
+import com.stanfy.gsonxml.XmlParserCreator;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.BufferedReader;
 import java.net.HttpURLConnection;
@@ -52,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
     private class fetchNotes extends AsyncTask<BoundingBox, Void, String> {
 
         @Override
@@ -69,9 +85,18 @@ public class MainActivity extends AppCompatActivity {
 
             // smaller_longitude,smaller_latitude,larger_longitude,larger_latitude
             try {
-                URL url = new URL("http://www.openstreetmap.org/api/0.6/notes/feed?bbox="+w+","+s+","+e+","+n);
-                HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-                result = conn.getContent().toString();
+
+                HttpGet httpget= new HttpGet("http://api.openstreetmap.org/api/0.6/notes.json?bbox="+w+","+s+","+e+","+n);
+                HttpClient httpclient = new DefaultHttpClient();
+                HttpResponse response = httpclient.execute(httpget);
+                int status = response.getStatusLine().getStatusCode();
+
+                if (status == 200) {
+                    HttpEntity entity = response.getEntity();
+                    result = EntityUtils.toString(entity);
+                }
+
+
 
             } catch (Exception e1) {
                 e1.printStackTrace();
@@ -87,10 +112,24 @@ public class MainActivity extends AppCompatActivity {
                 //uh oh
                 Log.d("API_Reponse", "uh oh");
             }
-            else {
+            else { Log.d("API_RESPONSE", s);
 
-                Log.d("API_Response", s);
+                try {
+                    JSONObject object = new JSONObject(s);
+                    JSONArray features = object.getJSONArray("features");
+
+                    for(int i =0; i<features.length(); i++){
+                        JSONObject note = new JSONObject(features.getString(i));
+                        Log.d("Note" , note.getJSONObject("properties").getJSONObject("comments").getString("text"));
+
+                    }
+                }
+                catch (Throwable t) {
+                    Log.e("Malformed_URL", "Could not parse malformed JSON:");
+                }
+                }
             }
         }
+
     }
-}
+

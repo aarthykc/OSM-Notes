@@ -26,7 +26,12 @@ repositories {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:22.2.1'
+    compile 'com.google.code.gson:gson:2.3.1'
     compile('com.mapbox.mapboxsdk:mapbox-android-sdk:0.7.4@aar') {
         transitive = true
     }
+    compile('com.stanfy:gson-xml-java:0.1.+') {
+        exclude group: 'xmlpull', module: 'xmlpull'
+    }
+
 }
