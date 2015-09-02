@@ -53,86 +53,30 @@ public class MainActivity extends AppCompatActivity {
 
             public void onClick(View v) {
 
-                if(myMapView.getBoundingBox()==null) {
+                if (myMapView.getBoundingBox() == null) {
                     Log.d("coordinates", "Not available");
-                }
-                else {
-                    Log.d("Coordinates",myMapView.getBoundingBox().toString());
-                    new fetchNotes().execute(myMapView.getBoundingBox());
+                } else {
+                    Log.d("Coordinates", myMapView.getBoundingBox().toString());
+                    Controller.getNotesFromBoundingBox(myMapView.getBoundingBox(), new NotesResultListener() {
+                        @Override
+                        public void onFailure() {
+                            //uh-oh
+                        }
+
+                        @Override
+                        public void onSuccess(List<OSMNote> osmNotes) {
+                            for(OSMNote note: osmNotes){
+                                myMapView.addMarker(note.convertToMarker());
+                            }
+
+                        }
+                    });
 
                 }
             }
         });
 
     }
-
-    private class fetchNotes extends AsyncTask<BoundingBox, Void, String> {
-
-        @Override
-        protected String doInBackground(BoundingBox... params) {
-
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
-            String result = null;
-
-            BoundingBox bbox = params[0];
-            String n = String.valueOf(bbox.getLatNorth());
-            String s = String.valueOf(bbox.getLatSouth());
-            String e = String.valueOf(bbox.getLonEast());
-            String w = String.valueOf(bbox.getLonWest());
-
-            // smaller_longitude,smaller_latitude,larger_longitude,larger_latitude
-            try {
-
-                HttpGet httpget= new HttpGet("http://api.openstreetmap.org/api/0.6/notes.json?bbox="+w+","+s+","+e+","+n);
-                HttpClient httpclient = new DefaultHttpClient();
-                HttpResponse response = httpclient.execute(httpget);
-                int status = response.getStatusLine().getStatusCode();
-
-                if (status == 200) {
-                    HttpEntity entity = response.getEntity();
-                    result = EntityUtils.toString(entity);
-                }
-
-
-
-            } catch (Exception e1) {
-                e1.printStackTrace();
-            }
-
-
-            return result;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            if(s == null) {
-                //uh oh
-                Log.d("API_Reponse", "uh oh");
-            }
-            else { Log.d("API_RESPONSE", s);
-
-
-                try {
-
-                    JSONObject object = new JSONObject(s);
-                    JSONArray features = object.getJSONArray("features");
-
-                    for(int i =0; i<features.length(); i++){
-                        JSONObject note = new JSONObject(features.getString(i));
-                        Log.d("Note", note.getJSONObject("properties").getJSONArray("comments").getJSONObject(0).getString("text"));
-                        double lon = note.getJSONObject("geometry").getJSONArray("coordinates").getDouble(0);
-                        double lat = note.getJSONObject("geometry").getJSONArray("coordinates").getDouble(1);
-                        myMapView.addMarker(new Marker("Note", note.getJSONObject("properties").getJSONArray("comments").getJSONObject(0).getString("text"), new LatLng(lat,lon)));
-
-                    }
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-                }
-            }
-        }
 
     }
 
