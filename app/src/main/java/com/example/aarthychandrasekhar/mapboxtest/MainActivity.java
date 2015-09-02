@@ -32,10 +32,12 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     MapView myMapView;
+    Marker marker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,10 +45,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         myMapView = (MapView)findViewById(R.id.mapview);
         myMapView.setCenter(new LatLng(12.9667, 77.5667));
-        myMapView.addMarker(new Marker("Tirumala", "A coool place", new LatLng(13.6795235, 79.3497522)));
-        Marker marker = new Marker(myMapView,"bangalore", "sucks to be here", new LatLng(12.9667, 77.5667));
-        myMapView.addMarker(marker);
-
 
         Button sendCoords = (Button) findViewById(R.id.send_coords);
 
@@ -54,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
 
             public void onClick(View v) {
-                double n,s,e,w;
+
                 if(myMapView.getBoundingBox()==null) {
                     Log.d("coordinates", "Not available");
                 }
@@ -114,18 +112,23 @@ public class MainActivity extends AppCompatActivity {
             }
             else { Log.d("API_RESPONSE", s);
 
+
                 try {
+
                     JSONObject object = new JSONObject(s);
                     JSONArray features = object.getJSONArray("features");
 
                     for(int i =0; i<features.length(); i++){
                         JSONObject note = new JSONObject(features.getString(i));
-                        Log.d("Note" , note.getJSONObject("properties").getJSONObject("comments").getString("text"));
+                        Log.d("Note", note.getJSONObject("properties").getJSONArray("comments").getJSONObject(0).getString("text"));
+                        double lon = note.getJSONObject("geometry").getJSONArray("coordinates").getDouble(0);
+                        double lat = note.getJSONObject("geometry").getJSONArray("coordinates").getDouble(1);
+                        myMapView.addMarker(new Marker("Note", note.getJSONObject("properties").getJSONArray("comments").getJSONObject(0).getString("text"), new LatLng(lat,lon)));
 
                     }
                 }
-                catch (Throwable t) {
-                    Log.e("Malformed_URL", "Could not parse malformed JSON:");
+                catch (Exception e) {
+                    e.printStackTrace();
                 }
                 }
             }
