@@ -7,10 +7,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.mapbox.mapboxsdk.api.ILatLng;
 import com.mapbox.mapboxsdk.geometry.BoundingBox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.Marker;
 import com.mapbox.mapboxsdk.views.MapView;
+import com.mapbox.mapboxsdk.views.MapViewListener;
 import com.stanfy.gsonxml.GsonXml;
 import com.stanfy.gsonxml.GsonXmlBuilder;
 import com.stanfy.gsonxml.XmlParserCreator;
@@ -48,9 +50,56 @@ public class MainActivity extends AppCompatActivity {
 
         Button sendCoords = (Button) findViewById(R.id.send_coords);
 
-        sendCoords.setOnClickListener(new View.OnClickListener() {
+        myMapView.setMapViewListener(new MapViewListener() {
             @Override
+            public void onShowMarker(MapView mapView, Marker marker) {
 
+            }
+
+            @Override
+            public void onHideMarker(MapView mapView, Marker marker) {
+
+            }
+
+            @Override
+            public void onTapMarker(MapView mapView, Marker marker) {
+
+                if(marker instanceof OSMNote) {
+                    Controller.resolveNote((OSMNote) marker, new ResolveNoteListener() {
+                        @Override
+                        public void onFailure() {
+
+                        }
+
+                        @Override
+                        public void onSuccess() {
+
+                        }
+                    });
+
+                }
+
+            }
+
+            @Override
+            public void onLongPressMarker(MapView mapView, Marker marker) {
+
+            }
+
+            @Override
+            public void onTapMap(MapView mapView, ILatLng iLatLng) {
+
+            }
+
+            @Override
+            public void onLongPressMap(MapView mapView, ILatLng iLatLng) {
+
+            }
+        });
+
+        sendCoords.setOnClickListener(new View.OnClickListener() {
+
+            @Override
             public void onClick(View v) {
 
                 if (myMapView.getBoundingBox() == null) {
@@ -65,8 +114,8 @@ public class MainActivity extends AppCompatActivity {
 
                         @Override
                         public void onSuccess(List<OSMNote> osmNotes) {
-                            for(OSMNote note: osmNotes){
-                                myMapView.addMarker(note.convertToMarker());
+                            for (OSMNote note : osmNotes) {
+                                myMapView.addMarker(note);
                             }
 
                         }

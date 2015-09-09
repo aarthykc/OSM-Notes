@@ -8,21 +8,18 @@ import java.util.List;
 /**
  * Created by aarthychandrasekhar on 02/09/15.
  */
-public class OSMNote {
+public class OSMNote extends Marker {
     String id;
     LatLng coordinates;
     String status;
     List<OSMComment> comments;
 
     public OSMNote(String id, LatLng coordinates, String status, List<OSMComment> comments) {
+        super("Note", comments.get(0).getText(), coordinates);
         this.id = id;
         this.coordinates = coordinates;
         this.status = status;
         this.comments = comments;
-    }
-
-    public Marker convertToMarker() {
-        return new Marker("Note", this.comments.get(0).getText(), this.coordinates);
     }
 
     public String getId() {

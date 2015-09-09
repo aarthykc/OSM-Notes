@@ -1,7 +1,9 @@
 package com.example.aarthychandrasekhar.mapboxtest;
 
 import android.os.AsyncTask;
+import android.util.Base64;
 import android.util.Log;
+import android.view.View;
 
 import com.mapbox.mapboxsdk.geometry.BoundingBox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -11,6 +13,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
@@ -29,6 +32,74 @@ public class Controller {
     }
     public static void getNotesFromBoundingBox(BoundingBox boundingBox, NotesResultListener notesResultListener) {
         new fetchNotesTask(notesResultListener).execute(boundingBox);
+    }
+
+    public static void resolveNote(OSMNote osmNote, ResolveNoteListener resolveNoteListener) {
+        new resolveNoteTask(resolveNoteListener).execute(osmNote);
+
+    }
+    public static void addComment(OSMNote osmNote, ResolveNoteListener resolveNoteListener){
+        new addCommentsTask().execute(osmNote);
+
+    }
+
+
+    private static class resolveNoteTask extends AsyncTask<OSMNote, Void, String> {
+        ResolveNoteListener resolveNoteListener;
+
+        public resolveNoteTask(ResolveNoteListener resolveNoteListener) {
+            this.resolveNoteListener = resolveNoteListener;
+        }
+
+        @Override
+        protected String doInBackground(OSMNote... params) {
+            String result = null;
+            try {
+
+                HttpPost httpPost = new HttpPost("http://api.openstreetmap.org/api/0.6/notes/427012/close.json");
+
+                // Encode username:password to base64 and add as a header
+                String base64EncodedCredentials = "Basic " + Base64.encodeToString(
+                        ("username:password").getBytes(),
+                        Base64.NO_WRAP);
+                httpPost.setHeader("Authorization", base64EncodedCredentials);
+
+
+                HttpClient httpclient = new DefaultHttpClient();
+                HttpResponse response = httpclient.execute(httpPost);
+                int status = response.getStatusLine().getStatusCode();
+
+                    HttpEntity entity = response.getEntity();
+                    result = EntityUtils.toString(entity);
+
+
+
+
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+
+
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            if (s == null) {
+                Log.d("API_Reponse", "uh oh");
+                resolveNoteListener.onFailure();
+            } else {
+                Log.d("API_RESPONSE", s);
+                resolveNoteListener.onSuccess();
+            }
+        }
+    }
+
+    private static class addCommentsTask extends AsyncTask<OSMNote,Void, String>{
+        @Override
+        protected String doInBackground(OSMNote... params) {
+            return null;
+        }
     }
 
     private static class fetchNotesTask extends AsyncTask<BoundingBox, Void, String> {
@@ -81,8 +152,8 @@ public class Controller {
                 notesResultListener.onFailure();
                 Log.d("API_Reponse", "uh oh");
             }
-            else { Log.d("API_RESPONSE", s);
-
+            else {
+                Log.d("API_RESPONSE", s);
 
                 try {
 
