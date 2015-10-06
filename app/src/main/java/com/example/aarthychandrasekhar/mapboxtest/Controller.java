@@ -1,6 +1,9 @@
 package com.example.aarthychandrasekhar.mapboxtest;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -43,6 +46,15 @@ public class Controller {
 
     }
 
+    public static void saveCredentials(Credentials credentials, Context c){
+        SharedPreferences sharedData = PreferenceManager.getDefaultSharedPreferences(c);
+        sharedData.edit().putString("username", credentials.getUsername());
+
+    }
+
+    public static Credentials getCredentials(Context c){
+        return null;
+    }
 
     private static class resolveNoteTask extends AsyncTask<OSMNote, Void, String> {
         ResolveNoteListener resolveNoteListener;
